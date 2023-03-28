@@ -6,6 +6,8 @@ const btnRight = document.querySelector("#right");
 const btnDown = document.querySelector("#down");
 const spanLives = document.querySelector("#lives");
 const spanTime = document.querySelector("#time");
+const spanRecord = document.querySelector("#record");
+const pResult = document.querySelector("#result");
 
 let canvasSize;
 let elementsSize;
@@ -44,8 +46,6 @@ function setCanvasSize() {
 }
 
 function startGame() {
-    console.log({ canvasSize, elementsSize });
-
     game.font = elementsSize + "px Verdana";
     game.textAlign = "center";
 
@@ -59,11 +59,11 @@ function startGame() {
     if (!timeStart) {
         timeStart = Date.now();
         timeInterval = setInterval(showTime, 100); //100 milisegundos
+        showRecord();
     }
 
     const mapRows = map.trim().split("\n"); //split crea un array a partir de un string, en este caso cada vez que haya un salto de línea y Trim borra espacios en blanco innecesarios
     const mapAll = mapRows.map((row) => row.trim().split("")); //esto es un array ya, donde puedo acceder a todos los elementos
-    console.log({ map, mapRows, mapAll });
 
     showLives();
 
@@ -80,7 +80,7 @@ function startGame() {
                 if (!playerPosition.x && !playerPosition.y) {
                     playerPosition.x = posX;
                     playerPosition.y = posY;
-                    console.log({ playerPosition });
+                    // console.log({ playerPosition });
                     // console.log({ posX, posY });
                 }
             } else if (col == "I") {
@@ -147,6 +147,22 @@ function levelFail() {
 function gameWin() {
     console.log("Ganaste el juego!");
     clearInterval(timeInterval);
+
+    const recordTime = localStorage.getItem("record_time");
+    const playerTime = Date.now() - timeStart;
+
+    if (recordTime) {
+        if (recordTime >= playerTime) {
+            localStorage.setItem("record_time", playerTime);
+            pResult.innerHTML = "Superaste el record anterior";
+        } else {
+            pResult.innerHTML = "No superaste el record anterior";
+        }
+    } else {
+        localStorage.setItem("record_time", playerTime);
+        pResult.innerHTML = "Primera vez? Muy bien, ahora supera tu tiempo!";
+    }
+    console.log({ recordTime, playerTime });
 }
 
 function showLives() {
@@ -158,6 +174,10 @@ function showLives() {
 
 function showTime() {
     spanTime.innerHTML = Date.now() - timeStart;
+}
+
+function showRecord() {
+    spanRecord.innerHTML = localStorage.getItem("record_time");
 }
 
 window.addEventListener("keydown", moveByKeys); //al llamar al adeventlistener sus respectivas funciones siempre van a recibir AL MENOS 1 PARÁMETRO
@@ -173,28 +193,21 @@ function moveByKeys(event) {
     else if (event.key === "ArrowDown") moveDown();
 }
 function moveUp() {
-    console.log("Me quiero mober hacia arriba");
-
     if (playerPosition.y - elementsSize < elementsSize) {
-        console.log("OUT");
     } else {
         playerPosition.y -= elementsSize;
         startGame();
     }
 }
 function moveLeft() {
-    console.log("Me quiero mober hacia la izquierda");
     if (playerPosition.x - elementsSize < elementsSize) {
-        console.log("OUT");
     } else {
         playerPosition.x -= elementsSize;
         startGame();
     }
 }
 function moveRight() {
-    console.log("Me quiero mober hacia la derecha");
     if (playerPosition.x + elementsSize > canvasSize) {
-        console.log("OUT");
     } else {
         playerPosition.x += elementsSize;
         startGame();
@@ -202,9 +215,7 @@ function moveRight() {
 }
 
 function moveDown() {
-    console.log("Me quiero mober hacia abajo");
     if (playerPosition.y + elementsSize > canvasSize) {
-        console.log("OUT");
     } else {
         playerPosition.y += elementsSize;
         startGame();
